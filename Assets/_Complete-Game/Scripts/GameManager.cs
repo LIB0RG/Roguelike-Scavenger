@@ -63,7 +63,7 @@ namespace Completed
             SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
-        //This is called each time a scene is loaded.
+        //Это вызывается каждый раз при загрузке сцены.
         static private void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
             instance.level++;
@@ -84,7 +84,7 @@ namespace Completed
 			levelText = GameObject.Find("LevelText").GetComponent<Text>();
 			
 			//Set the text of levelText to the string "Day" and append the current level number.
-			levelText.text = "Day " + level;
+			levelText.text = "День " + level;
 			
 			//Set levelImage to active blocking player's view of the game board during setup.
 			levelImage.SetActive(true);
@@ -136,7 +136,7 @@ namespace Completed
 		public void GameOver()
 		{
 			//Set levelText to display number of levels passed and game over message
-			levelText.text = "After " + level + " days, you starved.";
+			levelText.text = level + " дней ты голодал.";
 			
 			//Enable black background image gameObject.
 			levelImage.SetActive(true);
