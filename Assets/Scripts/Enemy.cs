@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
-//Enemy inherits from MovingObject, our base class for objects that can move, Player also inherits from this.
+//Enemy наследуетс€ от MovingObject, нашего базового класса дл€ движущихс€ объектов, Player также наследуетс€ от него.
 public class Enemy : MovingObject
 {
     //The amount of food points to subtract from the player when attacking.
@@ -13,6 +13,8 @@ public class Enemy : MovingObject
     private Transform target;
     //Boolean to determine whether or not enemy should skip a turn or move this turn.
     private bool skipMove;
+    public AudioClip enemyAttack1;
+    public AudioClip enemyAttack2;
 
 
     //Start overrides the virtual Start function of the base class.
@@ -81,7 +83,7 @@ public class Enemy : MovingObject
     //and takes a generic parameter T which we use to pass in the component we expect to encounter, in this case Player
     protected override void OnCantMove<T>(T component)
     {
-        //Declare hitPlayer and set it to equal the encountered component.
+        //ќбъ€вите hitPlayer и установите его равным обнаруженному компоненту.
         Player hitPlayer = component as Player;
 
         //Call the LoseFood function of hitPlayer passing it playerDamage, the amount of foodpoints to be subtracted.
@@ -89,6 +91,8 @@ public class Enemy : MovingObject
 
         //Set the attack trigger of animator to trigger Enemy attack animation.
         animator.SetTrigger("enemyAttack");
+
+        SoundManager.instance.RandomizeSfx(enemyAttack1, enemyAttack2);
 
     }
 }
