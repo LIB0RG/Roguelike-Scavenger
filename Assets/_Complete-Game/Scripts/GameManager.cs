@@ -2,10 +2,14 @@
 using UnityEngine.SceneManagement;
 using System.Collections;
 
+using System.Collections.Generic;       //Позволяет нам использовать списки.
+using UnityEngine.UI;                   //Позволяет нам использовать пользовательский интерфейс.
+
+
 namespace Completed
 {
-	using System.Collections.Generic;       //Allows us to use Lists. 
-	using UnityEngine.UI;                   //Allows us to use UI.
+	
+	
 
 	public class GameManager : MonoBehaviour
 	{
@@ -54,9 +58,38 @@ namespace Completed
 			InitGame();
 		}
 
-		//this is called only once, and the paramter tell it to be called only after the scene was loaded
-		//(otherwise, our Scene Load callback would be called the very first load, and we don't want that)
-		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+		//тут большое новое
+
+		//This is called each time a scene is loaded.
+		void OnLevelFinishedLoading(Scene scene, LoadSceneMode
+		mode)
+		{
+			//Add one to our level number.
+			level++;
+			//Call InitGame to initialize our level.
+			InitGame();
+		}
+		void OnEnable()
+		{
+			//Tell our ‘OnLevelFinishedLoading’ function to start listening for a scene change event as soon as
+			//this script is enabled.
+		SceneManager.sceneLoaded += OnLevelFinishedLoading;
+		}
+		void OnDisable()
+		{
+			//Tell our ‘OnLevelFinishedLoading’ function to stop listening for a scene change event as soon as this
+			//script is disabled.
+			//Remember to always have an unsubscription for every delegate you subscribe to!
+		SceneManager.sceneLoaded -= OnLevelFinishedLoading;
+	}
+
+		// тут заканчивается
+
+
+
+	//this is called only once, and the paramter tell it to be called only after the scene was loaded
+	//(otherwise, our Scene Load callback would be called the very first load, and we don't want that)
+	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
 		static public void CallbackInitialization()
 		{
 			//register the callback to be called everytime the scene is loaded

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityEngine.UI;   //Allows us to use UI.
+using UnityEngine.UI;   //Позволяет нам использовать пользовательский интерфейс.
 using UnityEngine.SceneManagement;
 
 namespace Completed

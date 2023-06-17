@@ -3,53 +3,53 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-//Player inherits from MovingObject, our base class for objects that can move, Enemy also inherits from this.
+//Player наследуется от MovingObject, нашего базового класса для движущихся объектов, Enemy также наследуется от него.
 public class Player : MovingObject
 {
-    //Delay time in seconds to restart level.
+    //Время задержки в секундах до перезапуска уровня.
     public float restartLevelDelay = 1f;
-    //Number of points to add to player food points when picking up a food object.
+    //Количество очков, добавляемых игроку к очкам еды при подборе пищевого объекта.
     public int pointsPerFood = 10;
-    //Number of points to add to player food points when picking up a soda object.
+    //Количество очков, добавляемых игроку к очкам еды при подборе предмета с газировкой.
     public int pointsPerSoda = 20;
-    //How much damage a player does to a wall when chopping it.
+    //Сколько урона игрок наносит стене, раскалывая ее.
     public int wallDamage = 1;
-    //UI Text to display current player food total.
+    //Текст пользовательского интерфейса для отображения общего количества еды для текущего игрока.
     public Text foodText;
-    //1 of 2 Audio clips to play when player moves.
+    //1 из 2 аудиоклипов для воспроизведения при перемещении игрока.
     public AudioClip moveSound1;
-    //2 of 2 Audio clips to play when player moves.
+    //2 из 2 Аудиоклипы для воспроизведения при перемещении игрока.
     public AudioClip moveSound2;
-    //1 of 2 Audio clips to play when player collects a food object.
+    //1 из 2 аудиоклипов, которые воспроизводятся, когда игрок собирает пищевой объект.
     public AudioClip eatSound1;
-    //2 of 2 Audio clips to play when player collects a food object.
+    //2 из 2 Аудиоклипы, которые воспроизводятся, когда игрок собирает пищевой объект.
     public AudioClip eatSound2;
-    //1 of 2 Audio clips to play when player collects a soda object.
+    //1 из 2 аудиоклипов, которые воспроизводятся, когда игрок собирает газировку.
     public AudioClip drinkSound1;
-    //2 of 2 Audio clips to play when player collects a soda object.
+    //2 из 2 Аудиоклипов, которые воспроизводятся, когда игрок собирает газировку.
     public AudioClip drinkSound2;
-    //Audio clip to play when player dies.
+    //Аудиоклип для воспроизведения, когда игрок умирает.
     public AudioClip gameOverSound;
 
-    //Ussed to store a reference to the Player's animator component.
+    //Используется для хранения ссылки на компонент аниматора проигрывателя.
     private Animator animator;
-    //Used to store Player food points total during level.
+    //Используется для хранения общего количества очков еды игрока во время уровня.
     private int food;
-    //Used to store locaiton of screen touch origin for mobile controls.
+    //Используется для хранения местоположения источника касания экрана для мобильных элементов управления.
     private Vector2 touchOrigin = -Vector2.one;
 
 
-    //Start overrides the Start function of MovingObject
+    //Start переопределяет функцию Start MovingObject.
     protected override void Start()
     {
-        //Get a component reference to the Player's animator component
+        //Получить ссылку компонента на компонент аниматора проигрывателя
         animator = GetComponent<Animator>();
 
-        //Get the current food point total stored in GameManager.instance between levels.
+        //Получить текущее общее количество очков еды, хранящееся в GameManager. экземпляр между уровнями.
         food = GameManager.instance.playerFoodPoints;
 
         //Set the foodText to reflect the current player food total.
-        foodText.text = "Food: " + food;
+        foodText.text = "Еда: " + food;
 
         //Call the Start function of the MovingObject base class.
         base.Start();
@@ -147,7 +147,7 @@ public class Player : MovingObject
         food--;
 
         //Update food text display to reflect current score.
-        foodText.text = "Food: " + food;
+        foodText.text = "Еда: " + food;
 
         //Call the AttemptMove method of the base class, passing in the component T (in this case Wall) and x and y direction to move.
         base.AttemptMove<T>(xDir, yDir);
@@ -205,7 +205,7 @@ public class Player : MovingObject
             food += pointsPerFood;
 
             //Update foodText to represent current total and notify player that they gained points
-            foodText.text = "+" + pointsPerFood + " Food: " + food;
+            foodText.text = "+" + pointsPerFood + " Еда: " + food;
 
             //Call the RandomizeSfx function of SoundManager and pass in two eating sounds to choose between to play the eating sound effect.
             SoundManager.instance.RandomizeSfx(eatSound1, eatSound2);
@@ -221,7 +221,7 @@ public class Player : MovingObject
             food += pointsPerSoda;
 
             //Update foodText to represent current total and notify player that they gained points
-            foodText.text = "+" + pointsPerSoda + " Food: " + food;
+            foodText.text = "+" + pointsPerSoda + " Еда: " + food;
 
             //Call the RandomizeSfx function of SoundManager and pass in two drinking sounds to choose between to play the drinking sound effect.
             SoundManager.instance.RandomizeSfx(drinkSound1, drinkSound2);
@@ -251,7 +251,7 @@ public class Player : MovingObject
         food -= loss;
 
         //Update the food display with the new total.
-        foodText.text = "-" + loss + " Food: " + food;
+        foodText.text = "-" + loss + " Еда: " + food;
 
         //Check to see if game has ended.
         CheckIfGameOver();
