@@ -4,42 +4,42 @@ using System.Collections;
 //Enemy наследуется от MovingObject, нашего базового класса для движущихся объектов, Player также наследуется от него.
 public class Enemy : MovingObject
 {
-    //The amount of food points to subtract from the player when attacking.
+    //Количество очков еды, которое нужно вычесть у игрока при атаке.
     public int playerDamage;
 
-    //Variable of type Animator to store a reference to the enemy's Animator component.
+    //Переменная типа Animator для хранения ссылки на компонент Animator противника.
     private Animator animator;
-    //Transform to attempt to move toward each turn.
+    //Трансформируйтесь, чтобы попытаться двигаться к каждому повороту.
     private Transform target;
-    //Boolean to determine whether or not enemy should skip a turn or move this turn.
+    //Логическое значение, определяющее, должен ли противник пропускать ход или двигаться в этом ходу.
     private bool skipMove;
     public AudioClip enemyAttack1;
     public AudioClip enemyAttack2;
 
 
-    //Start overrides the virtual Start function of the base class.
+    //Start переопределяет виртуальную функцию Start базового класса.
     protected override void Start()
     {
-        //Register this enemy with our instance of GameManager by adding it to a list of Enemy objects. 
-        //This allows the GameManager to issue movement commands.
+        //Зарегистрируйте этого врага в нашем экземпляре GameManager, добавив его в список объектов Enemy.
+        //Это позволяет GameManager выдавать команды движения.
         GameManager.instance.AddEnemyToList(this);
 
-        //Get and store a reference to the attached Animator component.
+        //Получите и сохраните ссылку на прикрепленный компонент Animator.
         animator = GetComponent<Animator>();
 
-        //Find the Player GameObject using it's tag and store a reference to its transform component.
+        //Найдите Player GameObject, используя его тег, и сохраните ссылку на его компонент преобразования.
         target = GameObject.FindGameObjectWithTag("Player").transform;
 
-        //Call the start function of our base class MovingObject.
+        //Вызовите функцию запуска нашего базового класса MovingObject.
         base.Start();
     }
 
 
-    //Override the AttemptMove function of MovingObject to include functionality needed for Enemy to skip turns.
-    //See comments in MovingObject for more on how base AttemptMove function works.
+    //Переопределите функцию AttemptMove объекта MovingObject, чтобы включить функции, необходимые врагу для пропуска ходов.
+    //См. комментарии в MovingObject для получения дополнительной информации о том, как работает базовая функция AttemptMove.
     protected override void AttemptMove<T>(int xDir, int yDir)
     {
-        //Check if skipMove is true, if so set it to false and skip this turn.
+        //Проверьте, верно ли значение skipMove, если да, установите его в false и пропустите этот ход.
         if (skipMove)
         {
             skipMove = false;
@@ -47,49 +47,50 @@ public class Enemy : MovingObject
 
         }
 
-        //Call the AttemptMove function from MovingObject.
+        //Вызовите функцию AttemptMove из MovingObject.
         base.AttemptMove<T>(xDir, yDir);
 
-        //Now that Enemy has moved, set skipMove to true to skip next move.
+        //Теперь, когда враг сдвинулся, установите для skipMove значение true, чтобы пропустить следующий ход.
         skipMove = true;
     }
 
 
-    //MoveEnemy is called by the GameManger each turn to tell each Enemy to try to move towards the player.
+    //MoveEnemy вызывается GameManger каждый ход, чтобы сказать каждому врагу попытаться двигаться к игроку.
     public void MoveEnemy()
     {
-        //Declare variables for X and Y axis move directions, these range from -1 to 1.
-        //These values allow us to choose between the cardinal directions: up, down, left and right.
+        //Объявите переменные для направлений перемещения по осям X и Y в диапазоне от -1 до 1.
+        //Эти значения позволяют нам выбирать между сторонами света: вверх, вниз, влево и вправо.
         int xDir = 0;
         int yDir = 0;
 
-        //If the difference in positions is approximately zero (Epsilon) do the following:
+        //Если разница в позициях приблизительно равна нулю (эпсилон), выполните следующие действия:
         if (Mathf.Abs(target.position.x - transform.position.x) < float.Epsilon)
 
-            //If the y coordinate of the target's (player) position is greater than the y coordinate of this enemy's position set y direction 1 (to move up). If not, set it to -1 (to move down).
+            //Если координата y положения цели (игрока) больше, чем координата y положения этого врага, установите направление y 1 (для движения вверх).
+            //Если нет, установите его на -1 (для перемещения вниз).
             yDir = target.position.y > transform.position.y ? 1 : -1;
 
-        //If the difference in positions is not approximately zero (Epsilon) do the following:
+        //Если разница в позициях не равна приблизительно нулю (эпсилон), выполните следующие действия:
         else
-            //Check if target x position is greater than enemy's x position, if so set x direction to 1 (move right), if not set to -1 (move left).
+            //Проверьте, больше ли позиция x цели, чем позиция x врага, если это так, установите направление x на 1 (движение вправо), если не установлено на -1 (движение влево).
             xDir = target.position.x > transform.position.x ? 1 : -1;
 
-        //Call the AttemptMove function and pass in the generic parameter Player, because Enemy is moving and expecting to potentially encounter a Player
+        //Вызовите функцию AttemptMove и передайте общий параметр Player, поскольку враг движется и ожидает возможной встречи с игроком.
         AttemptMove<Player>(xDir, yDir);
     }
 
 
-    //OnCantMove is called if Enemy attempts to move into a space occupied by a Player, it overrides the OnCantMove function of MovingObject 
-    //and takes a generic parameter T which we use to pass in the component we expect to encounter, in this case Player
+    //OnCantMove вызывается, если враг пытается переместиться в пространство, занятое игроком, он переопределяет функцию OnCantMove MovingObject.
+    //и принимает общий параметр T, который мы используем для передачи компонента, с которым мы ожидаем столкнуться, в данном случае Player
     protected override void OnCantMove<T>(T component)
     {
         //Объявите hitPlayer и установите его равным обнаруженному компоненту.
         Player hitPlayer = component as Player;
 
-        //Call the LoseFood function of hitPlayer passing it playerDamage, the amount of foodpoints to be subtracted.
+        //Вызовите функцию LoseFood для hitPlayer, передав ей playerDamage, количество очков еды, которое нужно вычесть.
         hitPlayer.LoseFood(playerDamage);
 
-        //Set the attack trigger of animator to trigger Enemy attack animation.
+        //Установите триггер атаки аниматора, чтобы вызвать анимацию атаки врага.
         animator.SetTrigger("enemyAttack");
 
         SoundManager.instance.RandomizeSfx(enemyAttack1, enemyAttack2);

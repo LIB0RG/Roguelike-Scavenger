@@ -13,7 +13,6 @@ public class Wall : MonoBehaviour
 
     private SpriteRenderer spriteRenderer;
 
-    // Start is called before the first frame update
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();

@@ -13,7 +13,7 @@ public class SoundManager : MonoBehaviour
     public float highPitchRange = 1.05f;
 
 
-    // Start is called before the first frame update
+    // Start вызываетс€ перед обновлением первого кадра
     void Awake()
     {
         if (instance == null)

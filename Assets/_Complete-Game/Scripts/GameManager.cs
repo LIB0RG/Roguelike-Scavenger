@@ -13,67 +13,67 @@ namespace Completed
 
 	public class GameManager : MonoBehaviour
 	{
-		public float levelStartDelay = 2f;                      //Time to wait before starting level, in seconds.
-		public float turnDelay = 0.1f;                          //Delay between each Player turn.
+		public float levelStartDelay = 2f;                      //Время ожидания перед началом уровня в секундах.
+		public float turnDelay = 0.1f;                          //Задержка между каждым ходом игрока.
 		public int playerFoodPoints = 100;                      //Начальное значение очков еды игрока.
-		public static GameManager instance = null;              //Static instance of GameManager which allows it to be accessed by any other script.
-		[HideInInspector] public bool playersTurn = true;       //Boolean to check if it's players turn, hidden in inspector but public.
+		public static GameManager instance = null;              //Статический экземпляр GameManager, который позволяет любому другому скрипту получить к нему доступ.
+		[HideInInspector] public bool playersTurn = true;       //Логическое значение для проверки хода игроков, скрытое в инспекторе, но общедоступное.
 
 
-		private Text levelText;                                 //Text to display current level number.
-		private GameObject levelImage;                          //Image to block out level as levels are being set up, background for levelText.
-		private BoardManager boardScript;                       //Store a reference to our BoardManager which will set up the level.
-		private int level = 1;                                  //Current level number, expressed in game as "Day 1".
-		private List<Enemy> enemies;                            //List of all Enemy units, used to issue them move commands.
-		private bool enemiesMoving;                             //Boolean to check if enemies are moving.
-		private bool doingSetup = true;                         //Boolean to check if we're setting up board, prevent Player from moving during setup.
+		private Text levelText;                                 //Текст для отображения номера текущего уровня.
+		private GameObject levelImage;                          //Изображение для блокировки уровня при настройке уровней, фон для levelText.
+		private BoardManager boardScript;                       //Сохраните ссылку на наш BoardManager, который настроит уровень.
+		private int level = 1;                                  //Текущий номер уровня, выраженный в игре как «День 1».
+		private List<Enemy> enemies;                            //Список всех вражеских юнитов, используемый для отдачи им команд движения.
+		private bool enemiesMoving;                             //Логическое значение, чтобы проверить, двигаются ли враги.
+		private bool doingSetup = true;                         //Логическое значение, чтобы проверить, устанавливаем ли мы доску, запретить игроку двигаться во время установки.
 
 
 
-		//Awake is always called before any Start functions
+		//Пробуждение всегда вызывается перед любыми функциями запуска.
 		void Awake()
 		{
-			//Check if instance already exists
+			//Проверить, существует ли уже экземпляр
 			if (instance == null)
 
-				//if not, set instance to this
+				//если нет, установите этот экземпляр
 				instance = this;
 
-			//If instance already exists and it's not this:
+			//Если экземпляр уже существует и это не так:
 			else if (instance != this)
 
-				//Then destroy this. This enforces our singleton pattern, meaning there can only ever be one instance of a GameManager.
+				//Тогда уничтожь это. Это обеспечивает соблюдение нашего одноэлементного шаблона, а это означает, что может быть только один экземпляр GameManager.
 				Destroy(gameObject);
 
-			//Sets this to not be destroyed when reloading scene
+			//Устанавливает, что это не будет уничтожено при перезагрузке сцены
 			DontDestroyOnLoad(gameObject);
 
-			//Assign enemies to a new List of Enemy objects.
+			//Назначьте врагов новому списку объектов Enemy.
 			enemies = new List<Enemy>();
 
-			//Get a component reference to the attached BoardManager script
+			//Получите ссылку на компонент для прикрепленного скрипта BoardManager
 			boardScript = GetComponent<BoardManager>();
 
-			//Call the InitGame function to initialize the first level 
+			//\Вызовите функцию InitGame для инициализации первого уровня.
 			InitGame();
 		}
 
 		//тут большое новое
 
-		//This is called each time a scene is loaded.
+		//Это вызывается каждый раз при загрузке сцены.
 		void OnLevelFinishedLoading(Scene scene, LoadSceneMode
 		mode)
 		{
-			//Add one to our level number.
+			//Добавьте единицу к нашему номеру уровня.
 			level++;
-			//Call InitGame to initialize our level.
+			//Вызовите InitGame, чтобы инициализировать наш уровень.
 			InitGame();
 		}
 		void OnEnable()
 		{
-			//Tell our ‘OnLevelFinishedLoading’ function to start listening for a scene change event as soon as
-			//this script is enabled.
-		SceneManager.sceneLoaded += OnLevelFinishedLoading;
+			//Скажите нашей функции OnLevelFinishedLoading, чтобы она начала прослушивать событие смены сцены, как только
+			//этот скрипт включен.
+			SceneManager.sceneLoaded += OnLevelFinishedLoading;
 		}
 		void OnDisable()
 		{
@@ -87,12 +87,12 @@ namespace Completed
 
 
 
-	//this is called only once, and the paramter tell it to be called only after the scene was loaded
-	//(otherwise, our Scene Load callback would be called the very first load, and we don't want that)
-	[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+		//это вызывается только один раз, и параметр указывает, что его нужно вызывать только после загрузки сцены.
+		//(иначе наш обратный вызов загрузки сцены будет вызываться самой первой загрузкой, а мы этого не хотим)
+		[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
 		static public void CallbackInitialization()
 		{
-			//register the callback to be called everytime the scene is loaded
+			//зарегистрировать обратный вызов, который будет вызываться каждый раз при загрузке сцены
 			SceneManager.sceneLoaded += OnSceneLoaded;
 		}
 
@@ -104,109 +104,109 @@ namespace Completed
 		}
 
 
-		//Initializes the game for each level.
+		//Инициализирует игру для каждого уровня.
 		void InitGame()
 		{
-			//While doingSetup is true the player can't move, prevent player from moving while title card is up.
+			//Пока действие «Setup» равно true, игрок не может двигаться, не позволяйте игроку двигаться, пока открыта титульная карточка.
 			doingSetup = true;
 
-			//Get a reference to our image LevelImage by finding it by name.
+			//Получите ссылку на наше изображение LevelImage, найдя его по имени.
 			levelImage = GameObject.Find("LevelImage");
 
-			//Get a reference to our text LevelText's text component by finding it by name and calling GetComponent.
+			//Получите ссылку на наш текстовый компонент LevelText, найдя его по имени и вызвав GetComponent.
 			levelText = GameObject.Find("LevelText").GetComponent<Text>();
 
-			//Set the text of levelText to the string "Day" and append the current level number.
+			//Установите текст levelText в строку «День» и добавьте номер текущего уровня.
 			levelText.text = "День " + level;
 
-			//Set levelImage to active blocking player's view of the game board during setup.
+			//Установите levelImage на активное блокирование обзора игрового поля игроком во время установки.
 			levelImage.SetActive(true);
 
-			//Call the HideLevelImage function with a delay in seconds of levelStartDelay.
+			//Вызовите функцию HideLevelImage с задержкой levelStartDelay в секундах.
 			Invoke("HideLevelImage", levelStartDelay);
 
-			//Clear any Enemy objects in our List to prepare for next level.
+			//Очистите все вражеские объекты в нашем списке, чтобы подготовиться к следующему уровню.
 			enemies.Clear();
 
-			//Call the SetupScene function of the BoardManager script, pass it current level number.
+			//Вызовите функцию SetupScene скрипта BoardManager, передайте ей номер текущего уровня.
 			boardScript.SetupScene(level);
 
 		}
 
 
-		//Hides black image used between levels
+		//Скрывает черное изображение, используемое между уровнями
 		void HideLevelImage()
 		{
-			//Disable the levelImage gameObject.
+			//Отключите игровой объект levelImage.
 			levelImage.SetActive(false);
 
-			//Set doingSetup to false allowing player to move again.
+			//Установите для doingSetup значение false, позволяя игроку снова двигаться.
 			doingSetup = false;
 		}
 
-		//Update is called every frame.
+		//Обновление вызывается каждый кадр.
 		void Update()
 		{
-			//Check that playersTurn or enemiesMoving or doingSetup are not currently true.
+			//Убедитесь, что в настоящее время не верно.
 			if (playersTurn || enemiesMoving || doingSetup)
 
-				//If any of these are true, return and do not start MoveEnemies.
+				//Если что-то из этого верно, вернитесь и не запускайте MoveEnemies.
 				return;
 
-			//Start moving enemies.
+			//Начните перемещать врагов.
 			StartCoroutine(MoveEnemies());
 		}
 
-		//Call this to add the passed in Enemy to the List of Enemy objects.
+		//Вызовите это, чтобы добавить переданный объект Enemy в список объектов Enemy.
 		public void AddEnemyToList(Enemy script)
 		{
-			//Add Enemy to List enemies.
+			//Добавить врага в список врагов.
 			enemies.Add(script);
 		}
 
 
-		//GameOver is called when the player reaches 0 food points
+		//GameOver вызывается, когда игрок достигает 0 очков еды
 		public void GameOver()
 		{
-			//Set levelText to display number of levels passed and game over message
+			//Установите levelText для отображения количества пройденных уровней и сообщения об окончании игры.
 			levelText.text = level + " дней ты голодал.";
 
-			//Enable black background image gameObject.
+			//Включить черное фоновое изображение gameObject.
 			levelImage.SetActive(true);
 
-			//Disable this GameManager.
+			//Отключите этот GameManager.
 			enabled = false;
 		}
 
-		//Coroutine to move enemies in sequence.
+		//Корутина для последовательного перемещения врагов.
 		IEnumerator MoveEnemies()
 		{
-			//While enemiesMoving is true player is unable to move.
+			//В то время, когда для параметра animalsMoving установлено значение true, игрок не может двигаться.
 			enemiesMoving = true;
 
-			//Wait for turnDelay seconds, defaults to .1 (100 ms).
+			//Подождите TurnDelay секунд, по умолчанию 0,1 (100 мс).
 			yield return new WaitForSeconds(turnDelay);
 
-			//If there are no enemies spawned (IE in first level):
+			//Если нет созданных врагов (IE на первом уровне):
 			if (enemies.Count == 0)
 			{
-				//Wait for turnDelay seconds between moves, replaces delay caused by enemies moving when there are none.
+				//Ждать TurnDelay секунд между ходами, заменяет задержку, вызванную движением врагов, когда их нет.
 				yield return new WaitForSeconds(turnDelay);
 			}
 
-			//Loop through List of Enemy objects.
+			//Прокрутите список объектов противника.
 			for (int i = 0; i < enemies.Count; i++)
 			{
-				//Call the MoveEnemy function of Enemy at index i in the enemies List.
+				//Вызовите функцию MoveEnemy врага с индексом i в списке врагов.
 				enemies[i].MoveEnemy();
 
-				//Wait for Enemy's moveTime before moving next Enemy, 
+				//Дождитесь времени перемещения врага, прежде чем двигаться к следующему врагу,
 				yield return new WaitForSeconds(enemies[i].moveTime);
 			}
-			//Once Enemies are done moving, set playersTurn to true so player can move.
+			//Как только враги закончат движение, установите для playerTurn значение true, чтобы игрок мог двигаться.
 			playersTurn = true;
 
-			//Enemies are done moving, set enemiesMoving to false.
+			//Враги больше не двигаются, установите для параметр enemiesMoving значение false.
 			enemiesMoving = false;
 		}
 	}

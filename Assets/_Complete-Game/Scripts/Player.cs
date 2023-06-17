@@ -5,261 +5,261 @@ using UnityEngine.SceneManagement;
 
 namespace Completed
 {
-	//Player inherits from MovingObject, our base class for objects that can move, Enemy also inherits from this.
+	//Player наследуется от MovingObject, нашего базового класса для движущихся объектов, Enemy также наследуется от него.
 	public class Player : MovingObject
 	{
-		public float restartLevelDelay = 1f;        //Delay time in seconds to restart level.
-		public int pointsPerFood = 10;              //Number of points to add to player food points when picking up a food object.
-		public int pointsPerSoda = 20;              //Number of points to add to player food points when picking up a soda object.
-		public int wallDamage = 1;                  //How much damage a player does to a wall when chopping it.
-		public Text foodText;                       //UI Text to display current player food total.
-		public AudioClip moveSound1;                //1 of 2 Audio clips to play when player moves.
-		public AudioClip moveSound2;                //2 of 2 Audio clips to play when player moves.
-		public AudioClip eatSound1;                 //1 of 2 Audio clips to play when player collects a food object.
-		public AudioClip eatSound2;                 //2 of 2 Audio clips to play when player collects a food object.
-		public AudioClip drinkSound1;               //1 of 2 Audio clips to play when player collects a soda object.
-		public AudioClip drinkSound2;               //2 of 2 Audio clips to play when player collects a soda object.
-		public AudioClip gameOverSound;             //Audio clip to play when player dies.
+		public float restartLevelDelay = 1f;        //Время задержки в секундах до перезапуска уровня.
+		public int pointsPerFood = 10;              //Количество очков, добавляемых игроку к очкам еды при подборе пищевого объекта.
+		public int pointsPerSoda = 20;              //Количество очков, добавляемых игроку к очкам еды при подборе предмета с газировкой.
+		public int wallDamage = 1;                  //Сколько урона игрок наносит стене, раскалывая ее.
+		public Text foodText;                       //Текст пользовательского интерфейса для отображения общего количества еды для текущего игрока.
+		public AudioClip moveSound1;                //1 из 2 аудиоклипов для воспроизведения при перемещении игрока.
+		public AudioClip moveSound2;                //2 из 2 Аудиоклипы для воспроизведения при перемещении игрока.
+		public AudioClip eatSound1;                 //1 из 2 аудиоклипов, которые воспроизводятся, когда игрок собирает пищевой объект.
+		public AudioClip eatSound2;                 //2 из 2 Аудиоклипы, которые воспроизводятся, когда игрок собирает пищевой объект.
+		public AudioClip drinkSound1;               //1 из 2 аудиоклипов, которые воспроизводятся, когда игрок собирает газировку.
+		public AudioClip drinkSound2;               //2 из 2 Аудиоклипов, которые воспроизводятся, когда игрок собирает газировку.
+		public AudioClip gameOverSound;             //Аудиоклип для воспроизведения, когда игрок умирает.
 
-		private Animator animator;                  //Used to store a reference to the Player's animator component.
-		private int food;                           //Used to store player food points total during level.
+		private Animator animator;                  //Используется для хранения ссылки на компонент аниматора проигрывателя.
+		private int food;                           //Используется для хранения общего количества очков еды игрока во время уровня.
 #if UNITY_IOS || UNITY_ANDROID || UNITY_WP8 || UNITY_IPHONE
-		private Vector2 touchOrigin = -Vector2.one; //Used to store location of screen touch origin for mobile controls.
+		private Vector2 touchOrigin = -Vector2.one; //Используется для хранения местоположения источника касания экрана для мобильных элементов управления.
 #endif
 
 
-		//Start overrides the Start function of MovingObject
+		//Start переопределяет функцию Start MovingObject.
 		protected override void Start()
 		{
-			//Get a component reference to the Player's animator component
+			//Получить ссылку компонента на компонент аниматора проигрывателя
 			animator = GetComponent<Animator>();
 
-			//Get the current food point total stored in GameManager.instance between levels.
+			//Получить текущее общее количество очков еды, хранящееся в GameManager. экземпляр между уровнями.
 			food = GameManager.instance.playerFoodPoints;
 
-			//Set the foodText to reflect the current player food total.
+			//Установите foodText, чтобы отразить общее количество еды текущего игрока.
 			foodText.text = "Food: " + food;
 
-			//Call the Start function of the MovingObject base class.
+			//Вызовите функцию Start базового класса MovingObject.
 			base.Start();
 		}
 
 
-		//This function is called when the behaviour becomes disabled or inactive.
+		//Эта функция вызывается, когда поведение становится отключенным или неактивным.
 		private void OnDisable()
 		{
-			//When Player object is disabled, store the current local food total in the GameManager so it can be re-loaded in next level.
+			//Когда объект Player отключен, сохраните текущее общее количество еды в GameManager, чтобы его можно было повторно загрузить на следующем уровне.
 			GameManager.instance.playerFoodPoints = food;
 		}
 
 
 		private void Update()
 		{
-			//If it's not the player's turn, exit the function.
+			//Если это не ход игрока, выйдите из функции.
 			if (!GameManager.instance.playersTurn) return;
 
-			int horizontal = 0;     //Used to store the horizontal move direction.
-			int vertical = 0;       //Used to store the vertical move direction.
+			int horizontal = 0;     //Используется для хранения горизонтального направления перемещения.
+			int vertical = 0;       //Используется для хранения направления вертикального перемещения.
 
-			//Check if we are running either in the Unity editor or in a standalone build.
+			//Проверьте, работаем ли мы в редакторе Unity или в автономной сборке.
 #if UNITY_STANDALONE || UNITY_WEBPLAYER
-			
-			//Get input from the input manager, round it to an integer and store in horizontal to set x axis move direction
+
+			//Получите ввод из диспетчера ввода, округлите его до целого числа и сохраните по горизонтали, чтобы установить направление движения по оси x.
 			horizontal = (int) (Input.GetAxisRaw ("Horizontal"));
-			//Get input from the input manager, round it to an integer and store in vertical to set y axis move direction
+			//Получите ввод из диспетчера ввода, округлите его до целого числа и сохраните по вертикали, чтобы задать направление движения по оси Y.
 			vertical = (int) (Input.GetAxisRaw ("Vertical"));
 			
-			//Check if moving horizontally, if so set vertical to zero.
+			//Проверьте, двигаетесь ли вы по горизонтали, если да, то установите по вертикали ноль.
 			if(horizontal != 0)
 			{
 				vertical = 0;
 			}
 
 
-			//Check if we are running on iOS, Android, Windows Phone 8 or Unity iPhone
+			//Проверьте, работаем ли мы на iOS, Android, Windows Phone 8 или Unity iPhone.
 #elif UNITY_IOS || UNITY_ANDROID || UNITY_WP8 || UNITY_IPHONE
 
-			//Check if Input has registered more than zero touches
+			//Проверьте, зарегистрировал ли ввод больше нуля касаний
 			if (Input.touchCount > 0)
 			{
-				//Store the first touch detected.
+				//Сохраните первое обнаруженное касание.
 				Touch myTouch = Input.touches[0];
 
 				//Проверьте, равна ли фаза этого касания «Начало»
 				if (myTouch.phase == TouchPhase.Began)
 				{
-					//If so, set touchOrigin to the position of that touch
+					//Если это так, установите touchOrigin в положение этого касания.
 					touchOrigin = myTouch.position;
 				}
 
-				//If the touch phase is not Began, and instead is equal to Ended and the x of touchOrigin is greater or equal to zero:
+				//Если фаза касания не начинается, а вместо этого равна Ended, а x touchOrigin больше или равен нулю:
 				else if (myTouch.phase == TouchPhase.Ended && touchOrigin.x >= 0)
 				{
-					//Set touchEnd to equal the position of this touch
+					//Установите touchEnd равным положению этого касания
 					Vector2 touchEnd = myTouch.position;
 
-					//Calculate the difference between the beginning and end of the touch on the x axis.
+					//Вычислите разницу между началом и концом касания по оси x.
 					float x = touchEnd.x - touchOrigin.x;
 
-					//Calculate the difference between the beginning and end of the touch on the y axis.
+					//Вычислите разницу между началом и концом касания по оси Y.
 					float y = touchEnd.y - touchOrigin.y;
 
-					//Set touchOrigin.x to -1 so that our else if statement will evaluate false and not repeat immediately.
+					//Установить сенсорное происхождение. x на -1, чтобы наш оператор else if оценивал ложь и не повторялся немедленно.
 					touchOrigin.x = -1;
 
-					//Check if the difference along the x axis is greater than the difference along the y axis.
+					//Проверьте, больше ли разница по оси x разницы по оси y.
 					if (Mathf.Abs(x) > Mathf.Abs(y))
-						//If x is greater than zero, set horizontal to 1, otherwise set it to -1
+						//Если x больше нуля, установите Horizontal равным 1, в противном случае установите его равным -1.
 						horizontal = x > 0 ? 1 : -1;
 					else
-						//If y is greater than zero, set horizontal to 1, otherwise set it to -1
+						//Если y больше нуля, установите Horizontal равным 1, в противном случае установите его равным -1.
 						vertical = y > 0 ? 1 : -1;
 				}
 			}
 
-#endif //End of mobile platform dependendent compilation section started above with #elif
-			//Check if we have a non-zero value for horizontal or vertical
+#endif //Конец раздела компиляции, зависящего от мобильной платформы, который начинается выше с #elif
+			//Проверяем, есть ли у нас ненулевое значение для горизонтали или вертикали
 			if (horizontal != 0 || vertical != 0)
 			{
-				//Call AttemptMove passing in the generic parameter Wall, since that is what Player may interact with if they encounter one (by attacking it)
-				//Pass in horizontal and vertical as parameters to specify the direction to move Player in.
+				//Вызвать AttemptMove, передав общий параметр Стена, так как это то, с чем игрок может взаимодействовать, если они столкнутся с ней (атакуя ее).
+				//Передайте горизонталь и вертикаль в качестве параметров, чтобы указать направление перемещения игрока.
 				AttemptMove<Wall>(horizontal, vertical);
 			}
 		}
 
-		//AttemptMove overrides the AttemptMove function in the base class MovingObject
-		//AttemptMove takes a generic parameter T which for Player will be of the type Wall, it also takes integers for x and y direction to move in.
+		//AttemptMove переопределяет функцию AttemptMove в базовом классе MovingObject.
+		//AttemptMove принимает общий параметр T, который для Player будет иметь тип Wall, а также целые числа для направления x и y для перемещения.
 		protected override void AttemptMove<T>(int xDir, int yDir)
 		{
-			//Every time player moves, subtract from food points total.
+			//Каждый раз, когда игрок перемещается, вычтите из общего количества очков еды.
 			food--;
 
-			//Update food text display to reflect current score.
-			foodText.text = "Food: " + food;
+			//Обновите текстовый дисплей еды, чтобы отразить текущий счет.
+			foodText.text = "Еды: " + food;
 
-			//Call the AttemptMove method of the base class, passing in the component T (in this case Wall) and x and y direction to move.
+			//Вызовите метод AttemptMove базового класса, передав компонент T (в данном случае Wall) и направления x и y для перемещения.
 			base.AttemptMove<T>(xDir, yDir);
 
-			//Hit allows us to reference the result of the Linecast done in Move.
+			//Hit позволяет нам ссылаться на результат Linecast, выполненный в Move.
 			RaycastHit2D hit;
 
-			//If Move returns true, meaning Player was able to move into an empty space.
+			//Если Move возвращает true, это означает, что Player смог переместиться в пустое место.
 			if (Move(xDir, yDir, out hit))
 			{
-				//Call RandomizeSfx of SoundManager to play the move sound, passing in two audio clips to choose from.
+				//Вызовите RandomizeSfx из SoundManager, чтобы воспроизвести звук движения, передав два аудиоклипа на выбор.
 				SoundManager.instance.RandomizeSfx(moveSound1, moveSound2);
 			}
 
-			//Since the player has moved and lost food points, check if the game has ended.
+			//Поскольку игрок переместился и потерял очки еды, проверьте, не закончилась ли игра.
 			CheckIfGameOver();
 
-			//Set the playersTurn boolean of GameManager to false now that players turn is over.
+			//Установите для логического значения playerTurn в GameManager значение false, когда ход игроков окончен.
 			GameManager.instance.playersTurn = false;
 		}
 
 
-		//OnCantMove overrides the abstract function OnCantMove in MovingObject.
-		//It takes a generic parameter T which in the case of Player is a Wall which the player can attack and destroy.
+		//OnCantMove переопределяет абстрактную функцию OnCantMove в MovingObject.
+		//Он принимает общий параметр T, который в случае Player представляет собой стену, которую игрок может атаковать и разрушить.
 		protected override void OnCantMove<T>(T component)
 		{
-			//Set hitWall to equal the component passed in as a parameter.
+			//Установите hitWall равным компоненту, переданному в качестве параметра.
 			Wall hitWall = component as Wall;
 
-			//Call the DamageWall function of the Wall we are hitting.
+			//Вызовите функцию DamageWall стены, в которую мы врезаемся.
 			hitWall.DamageWall(wallDamage);
 
-			//Set the attack trigger of the player's animation controller in order to play the player's attack animation.
+			//Установите триггер атаки контроллера анимации игрока, чтобы воспроизвести анимацию атаки игрока.
 			animator.SetTrigger("playerChop");
 		}
 
 
-		//OnTriggerEnter2D is sent when another object enters a trigger collider attached to this object (2D physics only).
+		//OnTriggerEnter2D отправляется, когда другой объект входит в триггерный коллайдер, прикрепленный к этому объекту (только для 2D-физики).
 		private void OnTriggerEnter2D(Collider2D other)
 		{
-			//Check if the tag of the trigger collided with is Exit.
+			//Проверьте, не сталкивался ли тег триггера с Exit.
 			if (other.tag == "Exit")
 			{
-				//Invoke the Restart function to start the next level with a delay of restartLevelDelay (default 1 second).
+				//Вызовите функцию Restart, чтобы начать следующий уровень с задержкой restartLevelDelay (по умолчанию 1 секунда).
 				Invoke("Restart", restartLevelDelay);
 
-				//Disable the player object since level is over.
+				//Отключите объект игрока, так как уровень закончился.
 				enabled = false;
 			}
 
-			//Check if the tag of the trigger collided with is Food.
+			//Проверьте, не столкнулся ли тег триггера с едой.
 			else if (other.tag == "Food")
 			{
-				//Add pointsPerFood to the players current food total.
+				//Добавьте очки за еду к текущему количеству еды игроков.
 				food += pointsPerFood;
 
-				//Update foodText to represent current total and notify player that they gained points
-				foodText.text = "+" + pointsPerFood + " Food: " + food;
+				//Обновите foodText, чтобы представить текущую сумму и уведомить игрока о том, что он набрал очки.
+				foodText.text = "+" + pointsPerFood + " Еды: " + food;
 
-				//Call the RandomizeSfx function of SoundManager and pass in two eating sounds to choose between to play the eating sound effect.
+				//Вызовите функцию RandomizeSfx SoundManager и передайте два звука еды, чтобы выбрать один из них для воспроизведения звукового эффекта еды.
 				SoundManager.instance.RandomizeSfx(eatSound1, eatSound2);
 
-				//Disable the food object the player collided with.
+				//Отключить пищевой объект, с которым столкнулся игрок.
 				other.gameObject.SetActive(false);
 			}
 
-			//Check if the tag of the trigger collided with is Soda.
+			//Проверьте, сталкивался ли тег триггера с Soda.
 			else if (other.tag == "Soda")
 			{
-				//Add pointsPerSoda to players food points total
+				//Добавить очкиPerSoda к общему количеству очков еды игроков
 				food += pointsPerSoda;
 
-				//Update foodText to represent current total and notify player that they gained points
-				foodText.text = "+" + pointsPerSoda + " Food: " + food;
+				//Обновите foodText, чтобы представить текущую сумму и уведомить игрока о том, что он набрал очки.
+				foodText.text = "+" + pointsPerSoda + " Еды: " + food;
 
-				//Call the RandomizeSfx function of SoundManager and pass in two drinking sounds to choose between to play the drinking sound effect.
+				//Вызовите функцию RandomizeSfx SoundManager и передайте два звука питья, чтобы выбрать один из них для воспроизведения звукового эффекта питья.
 				SoundManager.instance.RandomizeSfx(drinkSound1, drinkSound2);
 
-				//Disable the soda object the player collided with.
+				//Отключите объект газировки, с которым столкнулся игрок.
 				other.gameObject.SetActive(false);
 			}
 		}
 
 
-		//Restart reloads the scene when called.
+		//Restart перезагружает сцену при вызове.
 		private void Restart()
 		{
-			//Load the last scene loaded, in this case Main, the only scene in the game. And we load it in "Single" mode so it replace the existing one
-			//and not load all the scene object in the current scene.
+			//Загрузите последнюю загруженную сцену, в данном случае Main, единственную сцену в игре. И мы загружаем его в «Одиночном» режиме, чтобы он заменил существующий.
+			//и не загружать весь объект сцены в текущей сцене.
 			SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
 		}
 
 
-		//LoseFood is called when an enemy attacks the player.
-		//It takes a parameter loss which specifies how many points to lose.
+		//LoseFood вызывается, когда противник атакует игрока.
+		//Он принимает параметр loss, который указывает, сколько очков нужно потерять.
 		public void LoseFood(int loss)
 		{
-			//Set the trigger for the player animator to transition to the playerHit animation.
+			//Установите триггер для аниматора игрока на переход к анимации playerHit.
 			animator.SetTrigger("playerHit");
 
-			//Subtract lost food points from the players total.
+			//Вычтите потерянные очки еды из общего количества игроков.
 			food -= loss;
 
-			//Update the food display with the new total.
-			foodText.text = "-" + loss + " Food: " + food;
+			//Обновите дисплей еды с новой суммой.
+			foodText.text = "-" + loss + " Еды: " + food;
 
-			//Check to see if game has ended.
+			//Проверьте, не закончилась ли игра.
 			CheckIfGameOver();
 		}
 
 
-		//CheckIfGameOver checks if the player is out of food points and if so, ends the game.
+		//CheckIfGameOver проверяет, закончились ли у игрока очки еды, и если да, то завершает игру.
 		private void CheckIfGameOver()
 		{
-			//Check if food point total is less than or equal to zero.
+			//Проверьте, меньше или равно нулю общее количество очков еды.
 			if (food <= 0)
 			{
-				//Call the PlaySingle function of SoundManager and pass it the gameOverSound as the audio clip to play.
+				//Вызовите функцию PlaySingle SoundManager и передайте ей gameOverSound в качестве аудиоклипа для воспроизведения.
 				SoundManager.instance.PlaySingle(gameOverSound);
 
-				//Stop the background music.
+				//Остановите фоновую музыку.Остановите фоновую музыку.
 				SoundManager.instance.musicSource.Stop();
 
-				//Call the GameOver function of GameManager.
+				//Вызовите функцию GameOver в GameManager.
 				GameManager.instance.GameOver();
 			}
 		}
